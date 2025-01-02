@@ -78,5 +78,4 @@ async def _refresh_user_token(
 async def read_users_me(
     current_user: Annotated[SessionUser, Depends(get_current_active_user)],
 ):
-    print(current_user)
     return User(**dict(current_user))

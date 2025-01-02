@@ -171,7 +171,6 @@ async def refresh_user_token(access_token: str, refresh_token: str):
                 refresh_token,
                 access_token,
             )
-            print(user_id)
 
             if user_id is None:
                 return None
