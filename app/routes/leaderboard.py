@@ -91,6 +91,17 @@ async def patch(
         )
         return new_data
 
+@router.delete("/{username}", status_code=200, response_class=ORJSONResponse, response_model=LeaderboardItem)
+async def delete_user(
+    current_user: Annotated[User, fastapi.Depends(get_current_active_user)],
+    username: str
+):
+    async with db.acquire() as conn:
+        entry = await conn.fetchrow("DELETE FROM leaderboard WHERE LOWER(name) = LOWER($1) RETURNING *;", username)
+        if entry is None:
+            raise error(404, "resource does not exist")
+        return dict(entry)
+        
 
 @router.get(
     "/{username}",
