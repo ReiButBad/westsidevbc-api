@@ -76,7 +76,7 @@ async def _refresh_user_token(
     return token
 
 
-@router.get("/me/", response_model=User, status_code=200)
+@router.get("/me", response_model=User, status_code=200)
 async def read_users_me(
     current_user: Annotated[SessionUser, Depends(get_current_active_user)],
 ):
