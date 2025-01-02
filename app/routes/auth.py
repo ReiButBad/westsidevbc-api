@@ -66,10 +66,10 @@ async def invalidate_user_token(
 
 @router.post("/token/refresh", status_code=200)
 async def _refresh_user_token(
-    access_token: Annotated[str, Form()], refresh_token: Annotated[str, Form()]
+    access_token: Annotated[str, Form()], refresh_token: Annotated[str, Form()], device_id: Optional[str] = None
 ) -> Token:
     token = await refresh_user_token(
-        access_token=access_token, refresh_token=refresh_token
+        access_token=access_token, refresh_token=refresh_token, device_id=device_id
     )
     if token is False or token is None:
         raise error(401, "invalid credentials")

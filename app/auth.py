@@ -1,6 +1,6 @@
 import traceback
 import jwt
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Optional
 from asyncpg import Connection, Record
 from asyncpg.pool import PoolConnectionProxy
 from fastapi import Depends
@@ -161,7 +161,7 @@ async def invalidate_token(conn: Connection | PoolConnectionProxy, token: str):
     return ret
 
 
-async def refresh_user_token(access_token: str, refresh_token: str):
+async def refresh_user_token(access_token: str, refresh_token: str, device_id: Optional[str] = None):
 
     async with db.acquire() as conn:
         async with conn.transaction():
@@ -195,15 +195,9 @@ async def refresh_user_token(access_token: str, refresh_token: str):
 
             new_access_token = create_access_token({"sub": str(user_id)})
             new_refresh_token = create_refresh_token(user_id)
-
+            
             await conn.execute(
-                "DELETE FROM access_tokens WHERE refresh_token = $1", refresh_token
-            )
-            await conn.execute(
-                'INSERT INTO access_tokens (token, "user", refresh_token) VALUES ($1, $2, $3)',
-                new_access_token[0],
-                user_id,
-                new_refresh_token[0],
+                "UPDATE access_tokens SET token = $1, refresh_token = $2, device_id = $3  WHERE token = $4", new_access_token[0], new_refresh_token[0], device_id, access_token
             )
 
             return Token(
