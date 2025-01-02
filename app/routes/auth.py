@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, Form
 from fastapi.security import OAuth2PasswordRequestForm
 from ..error import error
@@ -23,6 +23,7 @@ router = APIRouter(prefix="/auth")
 @router.post("/token", status_code=201)
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    device_id: Optional[str] = None
 ) -> Token:
     async with db.acquire() as conn:
         user = await authenticate_user(conn, form_data.username, form_data.password)
@@ -45,10 +46,11 @@ async def login_for_access_token(
         )
 
         await conn.execute(
-            'INSERT INTO access_tokens (token, "user", refresh_token) VALUES ($1, $2, $3);',
+            'INSERT INTO access_tokens (token, "user", refresh_token, device_id) VALUES ($1, $2, $3, $4);',
             token.access_token.token,
             user.id,
             token.refresh_token.token,
+            device_id
         )
         return token
 
