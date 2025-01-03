@@ -100,7 +100,7 @@ def create_access_token(data: dict):
 def create_refresh_token(user_id: int):
     to_encode: dict[str, Any] = {"sub": str(user_id)}
 
-    expires_in_seconds = timedelta(seconds=259200)
+    expires_in_seconds = timedelta(seconds=REFRESH_TOKEN_EXPIRE_SECONDS)
     expire = datetime.now(timezone.utc) + expires_in_seconds
 
     to_encode.update({"exp": expire})

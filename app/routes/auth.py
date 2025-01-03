@@ -15,6 +15,7 @@ from ..auth import (
     get_current_active_user,
     invalidate_token,
     refresh_user_token,
+    oauth2_scheme
 )
 
 router = APIRouter(prefix="/auth")
@@ -57,10 +58,12 @@ async def login_for_access_token(
 
 @router.post("/token/invalidate", status_code=204)
 async def invalidate_user_token(
-    current_user: Annotated[SessionUser, Depends(get_current_active_user)]
+    token: Annotated[str, Depends(oauth2_scheme)]
 ):
     async with db.acquire() as conn:
-        ret = await invalidate_token(conn, current_user.access_token)
+        ret = await invalidate_token(conn, token)
+        if ret is None:
+            raise error(401, "invalid token")
         return
 
 
