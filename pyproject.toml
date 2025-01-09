@@ -1,7 +1,7 @@
 [project]
 name = "westsidevbc-api"
-version = "0.1.0"
-description = "Default template for PDM package"
+version = "0.1.1"
+description = "API for westsidevbc.top"
 authors = [
     {name = "ReiButBad", email = "reibutbad@gmail.com"},
 ]
@@ -9,9 +9,6 @@ dependencies = ["fastapi[standard]>=0.115.6", "asyncpg>=0.30.0", "orjson>=3.10.1
 requires-python = "==3.12.*"
 readme = "README.md"
 license = {text = "GPL-3.0"}
-
-[tool.pdm]
-distribution = false
 
 [dependency-groups]
 dev = [

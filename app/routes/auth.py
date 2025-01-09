@@ -15,7 +15,7 @@ from ..auth import (
     get_current_active_user,
     invalidate_token,
     refresh_user_token,
-    oauth2_scheme
+    oauth2_scheme,
 )
 
 router = APIRouter(prefix="/auth")
@@ -24,7 +24,7 @@ router = APIRouter(prefix="/auth")
 @router.post("/token", status_code=201)
 async def login_for_access_token(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    device_id: Optional[str] = None
+    device_id: Optional[str] = None,
 ) -> Token:
     async with db.acquire() as conn:
         user = await authenticate_user(conn, form_data.username, form_data.password)
@@ -51,15 +51,13 @@ async def login_for_access_token(
             token.access_token.token,
             user.id,
             token.refresh_token.token,
-            device_id
+            device_id,
         )
         return token
 
 
 @router.post("/token/invalidate", status_code=204)
-async def invalidate_user_token(
-    token: Annotated[str, Depends(oauth2_scheme)]
-):
+async def invalidate_user_token(token: Annotated[str, Depends(oauth2_scheme)]):
     async with db.acquire() as conn:
         ret = await invalidate_token(conn, token)
         if ret is None:
@@ -69,7 +67,9 @@ async def invalidate_user_token(
 
 @router.post("/token/refresh", status_code=200)
 async def _refresh_user_token(
-    access_token: Annotated[str, Form()], refresh_token: Annotated[str, Form()], device_id: Optional[str] = None
+    access_token: Annotated[str, Form()],
+    refresh_token: Annotated[str, Form()],
+    device_id: Optional[str] = None,
 ) -> Token:
     token = await refresh_user_token(
         access_token=access_token, refresh_token=refresh_token, device_id=device_id

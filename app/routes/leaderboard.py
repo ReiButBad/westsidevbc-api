@@ -24,18 +24,22 @@ class EditLeaderboardItem(BaseModel):
 @router.get("/list", response_class=ORJSONResponse, status_code=200)
 async def get(name: Optional[str] = None):
     async with db.acquire() as conn:
-        
+
         if name is not None:
             wildcard = f"%{name}%"
-            result = await conn.fetch("""
+            result = await conn.fetch(
+                """
                 SELECT name, points
                 FROM leaderboard
                 WHERE lower(name) ILIKE LOWER($1)
                 OR name % '$2'
                 ORDER BY similarity(lower(name), lower($2)) DESC;
-            """, wildcard, name)
+            """,
+                wildcard,
+                name,
+            )
             return result
-        
+
         result = await conn.fetch(
             "SELECT name, points FROM leaderboard ORDER BY points DESC;"
         )
@@ -74,7 +78,8 @@ async def patch(
 ):
     async with db.acquire() as conn:
         user = await conn.fetchrow(
-            "SELECT name, points FROM leaderboard WHERE LOWER(name) = LOWER($1)", username
+            "SELECT name, points FROM leaderboard WHERE LOWER(name) = LOWER($1)",
+            username,
         )
 
         if user is None:
@@ -91,17 +96,26 @@ async def patch(
         )
         return new_data
 
-@router.delete("/{username}", status_code=200, response_class=ORJSONResponse, response_model=LeaderboardItem)
+
+@router.delete(
+    "/{username}",
+    status_code=200,
+    response_class=ORJSONResponse,
+    response_model=LeaderboardItem,
+)
 async def delete_user(
     current_user: Annotated[User, fastapi.Depends(get_current_active_user)],
-    username: str
+    username: str,
 ):
     async with db.acquire() as conn:
-        entry = await conn.fetchrow("DELETE FROM leaderboard WHERE LOWER(name) = LOWER($1) RETURNING *;", username)
+        entry = await conn.fetchrow(
+            "DELETE FROM leaderboard WHERE LOWER(name) = LOWER($1) RETURNING *;",
+            username,
+        )
         if entry is None:
             raise error(404, "resource does not exist")
         return dict(entry)
-        
+
 
 @router.get(
     "/{username}",
@@ -112,7 +126,8 @@ async def delete_user(
 async def get_user(username: str):
     async with db.acquire() as conn:
         user = await conn.fetchrow(
-            "SELECT name, points FROM leaderboard WHERE LOWER(name) = LOWER($1)", username
+            "SELECT name, points FROM leaderboard WHERE LOWER(name) = LOWER($1)",
+            username,
         )
         if user is None:
             raise error(404, "resource does not exist")

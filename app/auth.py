@@ -161,7 +161,9 @@ async def invalidate_token(conn: Connection | PoolConnectionProxy, token: str):
     return ret
 
 
-async def refresh_user_token(access_token: str, refresh_token: str, device_id: Optional[str] = None):
+async def refresh_user_token(
+    access_token: str, refresh_token: str, device_id: Optional[str] = None
+):
 
     async with db.acquire() as conn:
         async with conn.transaction():
@@ -195,9 +197,13 @@ async def refresh_user_token(access_token: str, refresh_token: str, device_id: O
 
             new_access_token = create_access_token({"sub": str(user_id)})
             new_refresh_token = create_refresh_token(user_id)
-            
+
             await conn.execute(
-                "UPDATE access_tokens SET token = $1, refresh_token = $2, device_id = $3  WHERE token = $4", new_access_token[0], new_refresh_token[0], device_id, access_token
+                "UPDATE access_tokens SET token = $1, refresh_token = $2, device_id = $3  WHERE token = $4",
+                new_access_token[0],
+                new_refresh_token[0],
+                device_id,
+                access_token,
             )
 
             return Token(
